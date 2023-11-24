@@ -1,96 +1,277 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>DreamBooth</title>
-<link href="./DreamBooth_files/style.css" rel="stylesheet">
-<script type="text/javascript" src="./DreamBooth_files/jquery.mlens-1.0.min.js"></script> 
-<script type="text/javascript" src="./DreamBooth_files/jquery.js"></script>
+<title>OneMoreStep</title>
+<link href="./assets/style.css" rel="stylesheet">
+<script type="text/javascript" src="./assets/jquery.mlens-1.0.min.js"></script> 
+<script type="text/javascript" src="./assets/jquery.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [["$", "$"], ["\\(", "\\)"]],
+        displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    });
+
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+       for(i=0; i < all.length; i += 1) {
+           all[i].SourceElement().parentNode.className += ' has-jax';
+       }
+   });
+</script>      
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 </head>
 
 <body>
 <div class="content">
-  <h1><strong>DreamBooth: Fine Tuning Text-to-Image Diffusion Models for Subject-Driven Generation</strong></h1>
-  <p id="authors"><span><a href="https://natanielruiz.github.io/"></a></span><a href="https://natanielruiz.github.io/">Nataniel Ruiz</a	> <a href="http://people.csail.mit.edu/yzli/">Yuanzhen Li</a> <a href="https://varunjampani.github.io/">Varun Jampani</a> <a href="https://research.google/people/106214/">Yael Pritch</a> <a href="http://people.csail.mit.edu/mrub/">Michael Rubinstein</a> <a href="https://kfiraberman.github.io/">Kfir Aberman</a><br>
+  <h1><strong>One More Step: A Versatile Plug-and-Play Module for Rectifying Diffusion Schedule Flaws and Enhancing Low-Frequency Controls</strong></h1>
+  <p id="authors"><a href="https://mhh0318.github.io/">Minghui Hu<sup>&dagger;</sup></a	> <a href="https://jabir-zheng.github.io/">Jianbin Zheng<sup>&#42;</sup></a> <a href="https://chuanxiaz.com/">Chuanxia Zheng<sup>&Dagger;</sup></a> <a href="https://wang-chaoyue.github.io/">Chaoyue Wang<sup>&sect;</sup></a> <a href="https://www.sydney.edu.au/engineering/about/our-people/academic-staff/dacheng-tao.html">Dacheng Tao<sup>&sect;</sup></a> <a href="https://personal.ntu.edu.sg/astjcham/">Tat-Jen Cham<sup>&dagger;</sup></a><br>
+  <br>
+  <span style="font-size: 24px">
+    <sup>&dagger;</sup>Nanyang Technological University, <sup>&#42;</sup>South China University of Technology
     <br>
-  <span style="font-size: 24px">Google Research
+    <sup>&Dagger;</sup>University of Oxford, <sup>&sect;</sup>The University of Sydney
   </span></p>
   <br>
-  <img src="./DreamBooth_files/teaser_static.jpg" class="teaser-gif" style="width:100%;"><br>
-  <h3 style="text-align:center"><em>It’s like a photo booth, but once the subject is captured, it can be synthesized wherever your dreams take you…</em></h3>
+  <img src="./assets/front.jpg" style="width:100%;"><br>
+  <h3 style="text-align:center"><em>One More Step rectifies diffusion schedule flaws and enhances low-frequency controls without modifying any parameters in the pre-trained models.</em></h3>
     <font size="+2">
           <p style="text-align: center;">
-            <a href="https://arxiv.org/abs/2208.12242" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-	    (<font color="#C70039">new!</font>) <a href="https://github.com/google/dreambooth" target="_blank">[Dataset]</a> &nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="DreamBooth_files/bibtex.txt" target="_blank">[BibTeX]</a>
+            <a href="" target="_blank">[Paper]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+	          <a href="https://github.com/mhh0318/OneMoreStep" target="_blank">[Code]</a> &nbsp;&nbsp;&nbsp;&nbsp;
+            <!-- (<font color="#C70039">Hot!</font>) <a href="https://huggingface.co/models?other=diffusers%3AOMSPipeline" target="_blank">[Hugging Face]</a> -->
+            <a href="https://huggingface.co/models?other=diffusers%3AOMSPipeline" target="_blank">[Hugging Face]</a>
           </p>
     </font>
 </div>
 <div class="content">
   <h2 style="text-align:center;">Abstract</h2>
-  <p>Large text-to-image models achieved a remarkable leap in the evolution of AI, enabling high-quality and diverse synthesis of images from a given text prompt. However, these models lack the ability to mimic the appearance of subjects in a given reference set and synthesize novel renditions of them in different contexts. In this work, we present a new approach for "personalization" of text-to-image diffusion models (specializing them to users' needs). Given as input just a few images of a subject, we fine-tune a pretrained text-to-image model (Imagen, although our method is not limited to a specific model) such that it learns to bind a unique identifier with that specific subject. Once the subject is embedded in the output domain of the model, the unique identifier can then be used to synthesize fully-novel photorealistic images of the subject contextualized in different scenes. By leveraging the semantic prior embedded in the model with a new autogenous class-specific prior preservation loss, our technique enables synthesizing the subject in diverse scenes, poses, views, and lighting conditions that do not appear in the reference images. We apply our technique to several previously-unassailable tasks, including subject recontextualization, text-guided view synthesis, appearance modification, and artistic rendering (all while preserving the subject's key features).</p>
+  <p>
+    It is well known that many open-released foundational diffusion models have difficulty in generating images that substantially depart from average brightness, despite such images being present in the training data. 
+    This is due to an inconsistency: while denoising starts from pure Gaussian noise during inference, the training noise schedule retains residual data even in the final timestep distribution, due to difficulties in numerical conditioning in mainstream formulation, leading to unintended bias during inference. 
+    To mitigate this issue, certain &epsilon;-prediction models are combined with an ad-hoc offset-noise methodology. 
+    In parallel, some contemporary models have adopted zero-terminal SNR noise schedules together with $\mathbf{v}$-prediction, which necessitate major alterations to pre-trained models.
+    However, such changes risk destabilizing a large multitude of community-driven applications anchored on these pre-trained models. 
+    In light of this, our investigation revisits the fundamental causes, leading to our proposal of an innovative and principled remedy, called One More Step (OMS). 
+    By integrating a compact network and incorporating an additional simple yet effective step during inference, OMS elevates image fidelity and harmonizes the dichotomy between training and inference, while preserving original model parameters. Once trained, various pre-trained diffusion models with the same latent domain can share the same OMS module.
+  </p>
 </div>
 <div class="content">
   <h2>Background</h2>
-  <p> Given a particular subject such as clock (shown in the real images on the left), it is very challenging to generate it in different contexts with state-of-the-art text-to-image models, while maintaining high fidelity to its key visual features. Even with dozens of iterations over a text prompt that contains a detailed description of the appearance of the clock (<em>"retro style yellow alarm clock with a white clock face and a yellow number three on the right part of the clock face in the jungle"</em>), the Imagen model [Saharia et al., 2022] can't reconstruct its key visual features (third column). Furthermore, even models whose text embedding lies in a shared language-vision space and can create semantic variations of the image, such as DALL-E2 [Ramesh et al., 2022], can neither reconstruct the appearance of the given subject nor modify the context (second column). In contrast, our approach (right) can synthesize the clock with high fidelity and in new contexts (<em>"a [V] clock in the jungle"</em>).</p>
-  <br>
-  <img class="summary-img" src="./DreamBooth_files/background.png" style="width:100%;"> <br>
+  <p style="font-size: 18px"><strong>Discrepancy between Training and Sampling</strong></p>
+  <p>
+    During training, the data fed into the model at timestep $T$ is not purely noise; it contains minimal yet data-relevant signals. These inadvertently introduced signals include low-frequency details, such as the overall mean of each channel. The model is trained to denoise by respecting the mean in these leaked signals. 
+    However, during the inference phase, <em>sampling is performed using a standard Gaussian distribution</em>. This inconsistency in the distribution between training and inference leads the model to produce samples with the mean value presented at $T$ when given zero-mean Gaussian noise, resulting in the manifestation of images with median values.
+  </p>
+  <img class="summary-img" src="./assets/background.png" style="width:100%;"> <br>
+  <p style="font-size: 18px"><strong>Visualization of Discrepancy</strong></p>
+  <p>
+    This discrepancy can be intuitively visualized in the high-dimensional Gaussian space by estimating the radius $r$ [<a href="https://arxiv.org/abs/2302.08357">Ye Zhu et al., 2023</a>]. 
+    As shown in the table above, we evaluated the radius within the high-dimensional space for both the variables present during the training phase $r^{\mathcal{T}}$ and those during the inference phase $r^{\mathcal{S}}$. 
+    Additionally, drawing from [<a href="https://christianjhoward.me/talks/theory_reading_group_2020.pdf">Avrim Blum et al., 2020</a>; <a href="https://arxiv.org/abs/2302.08357">Ye Zhu et al., 2023</a>], we provided a geometric illustration of concentration mass in the equatorial cross-section of high-dimensional Gaussians in the figure above, where its mass concentrates in a very small annular band around the radius. 
+    <em>It can be observed that as the SNR increases, the distribution tends to be more data-centric, thus the radius of the distribution gradually decreases.</em> This intuitively displays the discrepancy between training and inference.
+  </p>
 </div>
 <div class="content">
   <h2>Approach</h2>
-  <p> Our method takes as input a few images (typically 3-5 images suffice, based on our experiments) of a subject (e.g., a specific dog) and the corresponding class name (e.g. "dog"), and returns a fine-tuned/"personalized'' text-to-image model that encodes a unique identifier that refers to the subject. Then, at inference, we can implant the unique identifier in different sentences to synthesize the subjects in difference contexts.</p>
+  <p style="font-size: 18px"><strong>Pipeline</strong></p>
+  <p>
+    We retain the entire pipeline of the current model, including both its parameters and the beta schedule. 
+    In contrast, we integrate a compact network and incorporate an additional simple yet effective step during inference. 
+    Specifically, in this step, we first train a network $\psi(\mathbf{x}_T^{\mathcal{S}}, \mathcal{C})$ to perform $\mathbf{v}$-prediction conditioned on $\mathbf{x}_T^{\mathcal{S}} \sim \mathcal{N}(0, \mathbf{I})$ with L2 loss $\Vert \mathbf{v}_T^\mathcal{S} - \tilde{\mathbf{v}}_T^{\mathcal{S}} \Vert^2_2$, where $\mathbf{v}_T^\mathcal{S} = -\mathbf{x}_0$ and $\tilde{\mathbf{v}}_T^\mathcal{S}$ is the prediction from the model.
+    Next, we reconstruct $\tilde{\mathbf{x}}_T^{\mathcal{T}}$ based on the output of $\psi$ with different solvers.
+    Subsequently, $\tilde{\mathbf{x}}_{T}^{\mathcal{T}}$ can be utilized as the initial noise and incorporated into various pre-trained models.
+  </p>
+  <p style="font-size: 18px"><strong>Geometric Explanation</strong></p>
+  <p>
+    As shown below, while directly sampling method requires sampling from a Gaussian distribution with a radius of $r^{\mathcal{T}}$, yet it samples from the standard Gaussian with $r^{\mathcal{S}}$ in practice. OMS bridges the gap $\Delta r$ between $r^{\mathcal{S}}$ and the required $r^{\mathcal{T}}$ through an additional inference step.
+  </p>
   <br>
-  <img class="summary-img" src="./DreamBooth_files/high_level.png" style="width:100%;"> <br>
-  <p>Given ~3-5 images of a subject we fine tune a text-to-image diffusion in two steps: (a) fine tuning the low-resolution text-to-image model with the input images paired with a text prompt containing a unique identifier and the name of the class the subject belongs to (e.g., "A photo of a [T] dog”), in parallel, we apply a class-specific prior preservation loss, which leverages the semantic prior that the model has on the class and encourages it to generate diverse instances belong to the subject's class by injecting the class name in the text prompt (e.g., "A photo of a dog”). (b) fine-tuning the super resolution components with pairs of low-resolution and high-resolution images taken from our input images set, which enables us to maintain high-fidelity to small details of the subject.</p>
-  <br>
-  <img class="summary-img" src="./DreamBooth_files/system.png" style="width:100%;"> <br>
+  <img class="summary-img" src="./assets/method.png" style="width:100%;"> <br>
 </div>
 <div class="content">
   <h2>Results</h2>
-  <p>Results for re-contextualization of a bag and vase subject instances. By finetuning a model using our method we are able to generate different images of the a subject instance in different environments, with high preservation of subject details and realistic interaction between the scene and the subject. We display the conditioning prompts below each image. </p>
-<img class="summary-img" src="./DreamBooth_files/results.png" style="width:100%;">
+  <p style="font-size: 18px"><strong>Qualitative Results</strong></p>
+  <p>
+    In the following, we showcase results generated by Stable Diffusion series models, comparing instances with and without the OMS module. 
+    It is apparent that SD1.5, SD2.1, and SDXL tend to generate samples with medium brightness due to flawed scheduler designs.
+    In contrast, the inclusion of OMS, designed to mitigate the discrepancy between training and sampling in diffusion models, results in generated images exhibiting a <font color="#C70039">broader spectrum of brightness</font>.
+  </p>
+  <img class="summary-img" src="./assets/quality.jpg" style="width:100%;"> <br>
+  <p style="font-size: 18px"><strong> Log-Frequency Histogram</strong></p>
+  <p>
+    We randomly select 10k captions from MS COCO and calculate the mean of corresponding images generated by SD1.5, SD2.1, and SDXL, both with and without OMS, and visualize the log-frequency distribution below. It is evident that our proposed OMS module promotes a distribution that is more widely covered.
+  </p>
+  <img class="summary-img" src="./assets/hist.jpg" style="width:100%;"> <br>
 </div>
 <div class="content">
-  <h2>Art Rendition</h2>
-  <p>Original artistic renditions of our subject dog in the style of famous painters. We remark that many of the generated poses were not seen in the training set, such as the Van Gogh and Warhol rendition. We also note that some renditions seem to have novel composition and faithfully imitate the style of the painter - even suggesting some sort of creativity (extrapolation given previous knowledge).</p>
-  <br>
-  <img class="summary-img" src="./DreamBooth_files/art.png" style="width:100%;"> <br>
+  <h2>Pluggability of OMS</h2>
+  <p>
+    The output of our proposed OMS model is associated with the training data of the diffusion phase. Once trained, various pre-trained diffusion models sharing the same latent domain can utilize the same OMS module. 
+    In the following, we illustrate the wide applicability of OMS to various pre-trained models, including <a href="https://github.com/luosiallen/latent-consistency-model">Latent Consistency Models</a> (LCM), the popular community model <a href="https://civitai.com/models/36520">GhostMix 2.0 BakedVAE</a>, and LoRA <a href="https://civitai.com/models/12597">MoXin 1.0</a>.
+    <font color="#C70039">Despite not being directly trained for these models, OMS can improve the generation of images with more diverse brightness for all of them.</font>
+  </p>
+  <p style="font-size: 18px"><strong>Pluggable to LCM</strong></p>
+  <img class="summary-img" src="./assets/lcm.png" style="width:100%;"> <br>
+  <p style="font-size: 18px"><strong>Pluggable to LCM-LoRA</strong></p>
+  <p>Samples from LCM, top row from original model and bottom row with OMS. SDXL with LCM-LoRA leans towards black-and-white images, but OMS produces more  colorful images. It is worth noting the mean value of all SDXL with LCM-LoRA results is 0.24 while the average value of OMS results is <b>0.17</b>.</p>
+  <img class="summary-img" src="./assets/lcm_add.png" style="width:100%;"> <br>
+  <strong>Prompt: close-up photography of old man standing in the rain at night, in a street lit by lamps, leica 35mm summilux</strong>
+  <p style="font-size: 18px"><strong>Pluggable to Custom Models</strong></p>
+  <img class="summary-img" src="./assets/lora1.jpg" style="width:100%;"> <br>
+  <strong>Prompt: portrait of a woman standing , willow branches, masterpiece, best quality, traditional chinese ink painting, modelshoot style, peaceful, smile, looking at viewer, wearing long hanfu, song, willow tree in background, wuchangshuo, high contrast, <em>in dark, black</em></strong> <br><br>
+  <img class="summary-img" src="./assets/lora2.jpg" style="width:100%;"> <br>
+  <strong>Prompt: The moon and the waterfalls, night, traditional chinese ink painting, modelshoot style, masterpiece, high contrast, <em>in dark, black</em></strong> <br><br>
+  <img class="summary-img" src="./assets/lora3.jpg" style="width:100%;"> <br>
+  <strong>Prompt: (masterpiece, top quality, best quality, official art, beautiful and aesthetic:1.2), (1girl), extreme detailed,(fractal art:1.3),colorful,highest detailed, high contrast, <em>in sunshine, white</em></strong> <br><br>
+  <img class="summary-img" src="./assets/lora4.jpg" style="width:100%;"> <br>
+  <strong>Prompt: portrait of a woman standing , willow branches, masterpiece, best quality, traditional chinese ink painting, modelshoot style, peaceful, smile, looking at viewer, wearing long hanfu, song, willow tree in background, wuchangshuo, high contrast, <em>in sunshine, white</em></strong>
 </div>
 <div class="content">
-  <h2>Text-Guided View Synthesis</h2>
-  <p>Our technique can synthesized images with specified viewpoints for a subject cat (left to right: top, bottom, side and back views). Note that the generated poses are  different from the input poses, and the background changes in a realistic manner given a pose change. We also highlight the preservation of complex fur patterns on the subject cat's forehead.</p>
-  <br>
-  <img class="summary-img" src="./DreamBooth_files/novel_views.png" style="width:100%;"> <br>
+  <h2>Low-Frequency Modification</h2>
+  <p>
+    Modifying the prompts in the OMS module, while maintaining constant text prompts in the diffusion backbone model, can significantly influences the low-frequency characteristics of the generated images, such as luminance and color.
+  </p>
+  <p style="font-size: 18px"><strong>Luminance Control</strong></p>
+  <img class="summary-img" src="./assets/diverse_light.jpg" style="width:100%;"> <br>
+  <p style="font-size: 18px"><strong>Color Variations</strong></p>
+  <img class="summary-img" src="./assets/diverse_prompt.jpg" style="width:100%;"> <br>
 </div>
 <div class="content">
-  <h2>Property Modification</h2>
-  <p>We show color modifications in the first row (using prompts ``a [color] [V] car''), and crosses between a specific dog and different animals in the second row (using prompts ``a cross of a [V] dog and a [target species]''). We highlight the fact that our method preserves unique visual features that give the subject its identity or essence, while performing the required property modification.</p>
-  <br>
-  <img class="summary-img" src="./DreamBooth_files/property_modification.png" style="width:100%;"> <br>
-</div>
-<div class="content">
-  <h2>Accessorization</h2>
-  <p>Outfitting a dog with accessories. The identity of the subject is preserved and many different outfits or accessories can be applied to the dog given a prompt of type <em>"a [V] dog wearing a police/chef/witch outfit''</em>. We observe a realistic interaction between the subject dog and the outfits or accessories, as well as a large variety of possible options.</p>
-  <br>
-  <img class="summary-img" src="./DreamBooth_files/accessories.png" style="width:100%;"> <br>
-</div>
-<div class="content">
-  <h2>Societal Impact</h2>
-  <p>This project aims to provide users with an effective tool for synthesizing personal subjects (animals, objects) in different contexts. While general text-to-image models might be biased towards specific attributes when synthesizing images from text, our approach enables the user to get a better reconstruction of their desirable subjects. On contrary, malicious parties might try to use such images to mislead viewers. This is a common issue, existing in other generative models approaches or content manipulation techniques. Future research in generative modeling, and specifically of personalized generative priors, must continue investigating and revalidating these concerns.</p>
-  <br>
+  <h2>Quantitative Performance</h2>
+  <style type="text/css">
+    .tg  {border:none;border-collapse:collapse;border-spacing:0;}
+    .tg td{border-style:solid;border-width:0px;font-family:Arial, sans-serif;font-size:14px;overflow:hidden;
+      padding:10px 5px;word-break:normal;}
+    .tg th{border-style:solid;border-width:0px;font-family:Arial, sans-serif;font-size:14px;font-weight:normal;
+      overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-zv36{background-color:#ffffff;border-color:inherit;font-weight:bold;text-align:left;vertical-align:top}
+    .tg .tg-dvid{background-color:#efefef;border-color:inherit;font-weight:bold;text-align:left;vertical-align:top}
+    .tg .tg-jq0u{background-color:#ffffff;border-color:inherit;font-style:italic;text-align:left;vertical-align:top}
+    .tg .tg-c6of{background-color:#ffffff;border-color:inherit;text-align:left;vertical-align:top}
+    </style>
+    <table class="tg" style="table-layout: fixed; width: 996px">
+    <colgroup>
+    <col style="width: 71px">
+    <col style="width: 72px">
+    <col style="width: 82px">
+    <col style="width: 104px">
+    <col style="width: 112px">
+    <col style="width: 95px">
+    <col style="width: 95px">
+    <col style="width: 79px">
+    <col style="width: 86px">
+    <col style="width: 98px">
+    <col style="width: 102px">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="tg-dvid">Model</th>
+        <th class="tg-dvid"></th>
+        <th class="tg-dvid">FID↓</th>
+        <th class="tg-dvid">CLIP Score↑</th>
+        <th class="tg-dvid">ImageReward↑</th>
+        <th class="tg-dvid">PickScore↑</th>
+        <th class="tg-dvid">Precision↑</th>
+        <th class="tg-dvid">Recall↑</th>
+        <th class="tg-dvid">Density↑</th>
+        <th class="tg-dvid">Coverage↑</th>
+        <th class="tg-dvid">Wasserstein↓</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="tg-zv36" rowspan="2">SD1.5</td>
+        <td class="tg-jq0u">RAW</td>
+        <td class="tg-zv36">12.52</td>
+        <td class="tg-c6of">0.2641</td>
+        <td class="tg-c6of">0.1991</td>
+        <td class="tg-c6of">21.49</td>
+        <td class="tg-c6of">0.60</td>
+        <td class="tg-zv36">0.55</td>
+        <td class="tg-c6of">0.56</td>
+        <td class="tg-c6of">0.54</td>
+        <td class="tg-c6of">22.47</td>
+      </tr>
+      <tr>
+        <td class="tg-jq0u">OMS</td>
+        <td class="tg-c6of">14.74</td>
+        <td class="tg-zv36">0.2645</td>
+        <td class="tg-zv36">0.2289</td>
+        <td class="tg-zv36">21.55</td>
+        <td class="tg-zv36">0.64</td>
+        <td class="tg-c6of">0.46</td>
+        <td class="tg-zv36">0.64</td>
+        <td class="tg-zv36">0.57</td>
+        <td class="tg-zv36">7.84</td>
+      </tr>
+      <tr>
+        <td class="tg-zv36" rowspan="2">SD2.1</td>
+        <td class="tg-jq0u">RAW</td>
+        <td class="tg-zv36">14.10</td>
+        <td class="tg-c6of">0.2624</td>
+        <td class="tg-c6of">0.4501</td>
+        <td class="tg-c6of">21.80</td>
+        <td class="tg-c6of">0.58</td>
+        <td class="tg-zv36">0.55</td>
+        <td class="tg-c6of">0.52</td>
+        <td class="tg-c6of">0.50</td>
+        <td class="tg-c6of">21.63</td>
+      </tr>
+      <tr>
+        <td class="tg-jq0u">OMS</td>
+        <td class="tg-c6of">15.72</td>
+        <td class="tg-zv36">0.2628</td>
+        <td class="tg-zv36">0.4565</td>
+        <td class="tg-zv36">21.82</td>
+        <td class="tg-zv36">0.61</td>
+        <td class="tg-c6of">0.48</td>
+        <td class="tg-zv36">0.58</td>
+        <td class="tg-zv36">0.54</td>
+        <td class="tg-zv36">7.70</td>
+      </tr>
+      <tr>
+        <td class="tg-zv36" rowspan="2">SD XL</td>
+        <td class="tg-jq0u">RAW</td>
+        <td class="tg-zv36">13.14</td>
+        <td class="tg-c6of">0.2669</td>
+        <td class="tg-c6of">0.8246</td>
+        <td class="tg-c6of">22.51</td>
+        <td class="tg-c6of">0.64</td>
+        <td class="tg-zv36">0.52</td>
+        <td class="tg-c6of">0.67</td>
+        <td class="tg-c6of">0.63</td>
+        <td class="tg-c6of">11.08</td>
+      </tr>
+      <tr>
+        <td class="tg-jq0u">OMS</td>
+        <td class="tg-c6of">13.29</td>
+        <td class="tg-zv36">0.2679</td>
+        <td class="tg-zv36">0.8730</td>
+        <td class="tg-zv36">22.52</td>
+        <td class="tg-zv36">0.65</td>
+        <td class="tg-c6of">0.49</td>
+        <td class="tg-zv36">0.70</td>
+        <td class="tg-zv36">0.64</td>
+        <td class="tg-zv36">7.25</td>
+      </tr>
+    </tbody>
+    </table>
 </div>
 <div class="content">
   <h2>BibTex</h2>
-  <code> @article{ruiz2022dreambooth,<br>
+  <!-- <code> @article{ruiz2022dreambooth,<br>
   &nbsp;&nbsp;title={DreamBooth: Fine Tuning Text-to-image Diffusion Models for Subject-Driven Generation},<br>
   &nbsp;&nbsp;author={Ruiz, Nataniel and Li, Yuanzhen and Jampani, Varun and Pritch, Yael and Rubinstein, Michael and Aberman, Kfir},<br>
   &nbsp;&nbsp;booktitle={arXiv preprint arxiv:2208.12242},<br>
   &nbsp;&nbsp;year={2022}<br>
-  } </code> 
+  } </code>  -->
 </div>
 <div class="content" id="acknowledgements">
   <p><strong>Acknowledgements</strong>:
-    We thank Rinon Gal, Adi Zicher, Ron Mokady, Bill Freeman, Dilip Krishnan, Huiwen Chang and Daniel Cohen-Or for their valuable inputs that helped improve this work, and to Mohammad Norouzi, Chitwan Saharia and William Chan for providing us with their support and the pretrained models of Imagen. Finally, a special thank you to David Salesin for his feedback, advice and for his support for the project.
-    <!-- Recycling a familiar <a href="https://chail.github.io/latent-composition/">template</a> ;). --> 
+    Project page template is borrowed from <a href="https://dreambooth.github.io/">DreamBooth</a>.
   </p>
 </div>
 </body>
